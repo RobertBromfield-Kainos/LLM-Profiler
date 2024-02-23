@@ -45,7 +45,9 @@ def get_usage_stats(command):
             continue
     return None
 
+
 no_of_tries_monitor_process = 0
+
 
 # Function to monitor the process and log CPU and memory usage
 def monitor_process(pid, cpu_file, memory_file):
@@ -57,11 +59,11 @@ def monitor_process(pid, cpu_file, memory_file):
 
             cpu_percent = p.cpu_percent(interval=0) + ollama_serve_stats['cpu_percent']
             memory_info = (p.memory_info().rss + ollama_serve_stats['memory_used']) / (
-                        1024 * 1024)  # Convert bytes to MB
+                    1024 * 1024)  # Convert bytes to MB
             virtual_memory = (p.memory_info().vms + ollama_serve_stats['virtual_memory_used']) / (
-                        1024 * 1024)  # Convert bytes to MB
+                    1024 * 1024)  # Convert bytes to MB
 
-            current_time = datetime.now().strftime(constants.datetime_format)
+            current_time = datetime.now().strftime(constants.datetime_format_with_microseconds)
             with open(cpu_file, 'a', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerow([current_time, cpu_percent])
@@ -74,7 +76,6 @@ def monitor_process(pid, cpu_file, memory_file):
             time.sleep(1)
             no_of_tries_monitor_process += 1
             monitor_process(pid, cpu_file, memory_file)
-
 
 
 # Global buffer for input
@@ -232,10 +233,11 @@ def main(args):
     model_name = command.split()[-1]
 
     if not args.prompt_file:
-        output_folder = make_folder('output', model_name, datetime.now().strftime(constants.datetime_format) + '/')
+        output_folder = make_folder('output', model_name,
+                                    datetime.now().strftime(constants.datetime_format_with_microseconds) + '/')
     else:
         output_folder = make_folder('output', args.prompt_file, model_name,
-                                    datetime.now().strftime(constants.datetime_format) + '/')
+                                    datetime.now().strftime(constants.datetime_format_with_microseconds) + '/')
 
     master_fd, pid = spawn_process(command)
 
@@ -273,8 +275,6 @@ def main(args):
 def run_ollama(model):
     command = 'ollama run ' + model
     main(command)
-
-
 
 
 if __name__ == "__main__":

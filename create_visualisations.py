@@ -20,8 +20,10 @@ def plot_cpu_usage_with_annotations(folder_path):
 
     # Convert timestamps to datetime
     cpu_usage_data['Timestamp'] = pd.to_datetime(cpu_usage_data['Timestamp'])
-    input_response_data['input_timestamp'] = pd.to_datetime(input_response_data['input_timestamp']) - timedelta(seconds=1)
-    input_response_data['output_timestamp'] = pd.to_datetime(input_response_data['output_timestamp']) + timedelta(seconds=2)
+    input_response_data['input_timestamp'] = pd.to_datetime(input_response_data['input_timestamp']) - timedelta(
+        seconds=1)
+    input_response_data['output_timestamp'] = pd.to_datetime(input_response_data['output_timestamp']) + timedelta(
+        seconds=2)
 
     # Find the cutoff time: 2 seconds after the last output
     cutoff_time = input_response_data['output_timestamp'].max() + timedelta(seconds=2)
@@ -35,7 +37,7 @@ def plot_cpu_usage_with_annotations(folder_path):
 
     # Plot the entire CPU usage data first
     plt.plot(cpu_usage_data['Timestamp'], cpu_usage_data['CPU Usage (%)'], color='blue', alpha=0.5,
-                label='CPU Usage')
+             label='CPU Usage')
 
     # Highlight sections and add annotations based on input_response data
     prompt_counter = 1
@@ -46,10 +48,10 @@ def plot_cpu_usage_with_annotations(folder_path):
         ax.axvspan(start, end, color=color, alpha=0.3)
         prompt_counter += 1
 
-    # Formatting the x-axis to make it more readable
-    ax.xaxis.set_major_locator(mdates.MinuteLocator())
-    ax.xaxis.set_major_formatter(mdates.DateFormatter(constants.datetime_format))
-    plt.gcf().autofmt_xdate()  # Rotation
+    input_and_output_timestamps = pd.concat(
+        [input_response_data['input_timestamp'], input_response_data['output_timestamp']]).unique()
+    ax.set_xticks(input_and_output_timestamps)
+    ax.set_xticklabels(input_and_output_timestamps, rotation=45, ha='right')
 
     plt.title('CPU Usage Over Time with Input-Output Annotations')
     plt.xlabel('Time')
@@ -63,7 +65,7 @@ def plot_cpu_usage_with_annotations(folder_path):
         os.makedirs(visualisations_folder)
 
     # Save the plot
-    plot_file_path = os.path.join(visualisations_folder, 'cpu_usage_with_annotations.png')
+    plot_file_path = os.path.join(visualisations_folder, 'cpu_usage.png')
     plt.savefig(plot_file_path)
     print(f"Plot saved to {plot_file_path}")
 
@@ -82,8 +84,8 @@ def plot_memory_usage_with_annotations(folder_path):
 
     # Convert timestamps to datetime
     memory_usage_data['Timestamp'] = pd.to_datetime(memory_usage_data['Timestamp'])
-    input_response_data['input_timestamp'] = pd.to_datetime(input_response_data['input_timestamp']) - timedelta(seconds=1)
-    input_response_data['output_timestamp'] = pd.to_datetime(input_response_data['output_timestamp']) + timedelta(seconds=2)  # Extend end by 1 second
+    input_response_data['input_timestamp'] = pd.to_datetime(input_response_data['input_timestamp'])
+    input_response_data['output_timestamp'] = pd.to_datetime(input_response_data['output_timestamp'])
 
     # Find the cutoff time: 2 seconds after the last output
     cutoff_time = input_response_data['output_timestamp'].max() + timedelta(seconds=2)
@@ -99,7 +101,8 @@ def plot_memory_usage_with_annotations(folder_path):
                 label='Memory Usage (MB)')
 
     # Plot virtual memory usage
-    axs[1].plot(memory_usage_data['Timestamp'], memory_usage_data['Virtual Memory Usage (MB)'], color='purple', alpha=0.5,
+    axs[1].plot(memory_usage_data['Timestamp'], memory_usage_data['Virtual Memory Usage (MB)'], color='purple',
+                alpha=0.5,
                 label='Virtual Memory Usage (MB)')
 
     # Highlight sections and add annotations based on input_response data for both subplots
@@ -110,10 +113,10 @@ def plot_memory_usage_with_annotations(folder_path):
         for ax in axs:
             ax.axvspan(start, end, color=color, alpha=0.3)
 
-    # Formatting the x-axis to make it more readable
-    axs[1].xaxis.set_major_locator(mdates.MinuteLocator())
-    axs[1].xaxis.set_major_formatter(mdates.DateFormatter(constants.datetime_format))
-    fig.autofmt_xdate()  # Rotation
+    input_and_output_timestamps = pd.concat(
+        [input_response_data['input_timestamp'], input_response_data['output_timestamp']]).unique()
+    ax.set_xticks(input_and_output_timestamps)
+    ax.set_xticklabels(input_and_output_timestamps, rotation=45, ha='right')
 
     axs[0].set_title('Physical Memory Usage Over Time with Input-Output Annotations')
     axs[1].set_title('Virtual Memory Usage Over Time with Input-Output Annotations')
@@ -130,7 +133,7 @@ def plot_memory_usage_with_annotations(folder_path):
         os.makedirs(visualisations_folder)
 
     # Save the plot
-    plot_file_path = os.path.join(visualisations_folder, 'memory_usage_with_annotations.png')
+    plot_file_path = os.path.join(visualisations_folder, 'memory_usage.png')
     plt.savefig(plot_file_path)
     print(f"Plot saved to {plot_file_path}")
 
@@ -152,8 +155,8 @@ def generate_markdown_table_with_memory_change(folder_path):
     # Convert timestamps to datetime
     memory_usage_data['Timestamp'] = pd.to_datetime(memory_usage_data['Timestamp'])
     cpu_usage_data['Timestamp'] = pd.to_datetime(cpu_usage_data['Timestamp'])
-    input_response_data['input_timestamp'] = pd.to_datetime(input_response_data['input_timestamp']) - timedelta(seconds=1)  # Extend start by 1 second
-    input_response_data['output_timestamp'] = pd.to_datetime(input_response_data['output_timestamp']) + timedelta(seconds=2)  # Extend end by 1 second
+    input_response_data['input_timestamp'] = pd.to_datetime(input_response_data['input_timestamp'])
+    input_response_data['output_timestamp'] = pd.to_datetime(input_response_data['output_timestamp'])
 
     # Prepare the markdown table
     markdown_table = "| Input | Output | Response Time | Max CPU Usage (%) | Change in Memory Usage (MB) |\n"
@@ -169,13 +172,13 @@ def generate_markdown_table_with_memory_change(folder_path):
         relevant_cpu_usage = cpu_usage_data[
             (cpu_usage_data['Timestamp'] >= row['input_timestamp']) &
             (cpu_usage_data['Timestamp'] <= row['output_timestamp'])
-        ]
+            ]
         max_cpu_usage = relevant_cpu_usage['CPU Usage (%)'].max() if not relevant_cpu_usage.empty else 0
 
         # Find the last memory usage before the input
         previous_memory_usage = memory_usage_data[
             memory_usage_data['Timestamp'] < row['input_timestamp']
-        ]['Memory Usage (MB)'].last_valid_index()
+            ]['Memory Usage (MB)'].last_valid_index()
         last_memory_usage_before_input = memory_usage_data.loc[previous_memory_usage, 'Memory Usage (MB)'] \
             if previous_memory_usage is not None else 0
 
@@ -183,7 +186,7 @@ def generate_markdown_table_with_memory_change(folder_path):
         relevant_memory_usage = memory_usage_data[
             (memory_usage_data['Timestamp'] >= row['input_timestamp']) &
             (memory_usage_data['Timestamp'] <= row['output_timestamp'])
-        ]
+            ]
         max_memory_usage = relevant_memory_usage['Memory Usage (MB)'].max() if not relevant_memory_usage.empty else 0
 
         # Calculate the change in memory usage
@@ -202,8 +205,9 @@ def generate_markdown_table_with_memory_change(folder_path):
     with open(markdown_table_file_path, 'w') as file:
         file.write(markdown_table)
 
+
 def main(model, prompt_file):
-    model_path = os.path.join('output',prompt_file, model)
+    model_path = os.path.join('output', prompt_file, model)
     folder_path = os.path.join(model_path, sorted(os.listdir(model_path))[-1])
     plot_cpu_usage_with_annotations(folder_path)
     plot_memory_usage_with_annotations(folder_path)
@@ -211,8 +215,8 @@ def main(model, prompt_file):
 
 
 if __name__ == "__main__":
-    model = 'llama2'
-    model_path = os.path.join('output', model)
+    model = 'codellama:34b'
+    model_path = os.path.join('output', 'hello_world_prompts', model)
     folder_path = os.path.join(model_path, sorted(os.listdir(model_path))[-1])
     plot_cpu_usage_with_annotations(folder_path)
     plot_memory_usage_with_annotations(folder_path)
