@@ -72,13 +72,24 @@ if __name__ == "__main__":
         print("Usage: script.py <filename.csv> <command>")
         sys.exit(1)
 
-    csv_file = sys.argv[1]
+    prompt_file = sys.argv[1]
     model = sys.argv[2]
 
-    command = f'python profiler.py "ollama run {model}" --prompt_file {csv_file.split(".")[0]}'
-    main(csv_file, command)
+    command = f'python profiler.py "ollama run {model}" --prompt_file {prompt_file.split(".")[0]}'
+    main(prompt_file, command)
 
-    create_visualisations.main(model, csv_file.split(".")[0])
+    create_visualisations.run(model, prompt_file.split(".")[0])
     close_ollama()
 
 
+def run(csv_file, model):
+    try:
+        close_ollama()
+        command = f'python profiler.py "ollama run {model}" --prompt_file {csv_file.split(".")[0]}'
+        main(csv_file, command)
+        create_visualisations.run(model, csv_file.split(".")[0])
+        close_ollama()
+        return True
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return False

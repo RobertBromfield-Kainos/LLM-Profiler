@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import os
 from datetime import datetime, timedelta
-import constants
+import utils
 
 
 def plot_cpu_usage_with_annotations(folder_path):
@@ -140,6 +140,22 @@ def plot_memory_usage_with_annotations(folder_path):
     plt.close(fig)  # Close the plot to free resources
 
 
+
+def generate_markdown_line(items: list, is_header: bool = False) -> str:
+    """
+    Generate a markdown table line from a list of items
+    :param items: List of items to include in the line
+    :param is_header: Whether the line is a header line
+    :return: A markdown table line
+    """
+    line = "|"
+    for item in items:
+        line += f" {item} |"
+    line += "\n"
+    if is_header:
+        line += "|" + " --- |" * len(items) + "\n"
+    return line
+
 def generate_markdown_table_with_memory_change(folder_path):
     # Define paths to the CSV files
     memory_usage_file_path = os.path.join(folder_path, 'memory_usage.csv')
@@ -158,9 +174,7 @@ def generate_markdown_table_with_memory_change(folder_path):
     input_response_data['input_timestamp'] = pd.to_datetime(input_response_data['input_timestamp'])
     input_response_data['output_timestamp'] = pd.to_datetime(input_response_data['output_timestamp'])
 
-    # Prepare the markdown table
-    markdown_table = "| Input | Output | Response Time | Max CPU Usage (%) | Change in Memory Usage (MB) |\n"
-    markdown_table += "| --- | --- | --- | --- | --- |\n"
+    markdown_table = generate_markdown_line(['Input', 'Output', 'Response Time', 'Words per Second', 'Max CPU Usage (%)', 'Change in Memory Usage (MB)'], True)
 
     # Loop through each row in input_response_data to calculate values and add to the table
     for index, row in input_response_data.iterrows():
@@ -192,10 +206,13 @@ def generate_markdown_table_with_memory_change(folder_path):
         # Calculate the change in memory usage
         change_in_memory_usage = max_memory_usage - last_memory_usage_before_input
 
-        # Add the row to the markdown table
-        markdown_table += f"| {input_text} | {output_text} | {response_time} seconds | {max_cpu_usage:.2f}% | {change_in_memory_usage:.2f} MB |\n"
+        # Calculate the words per second
+        words_per_second = len(output_text.replace('<br>',' ').split(' ')) / response_time
 
-    # Create the visualisations folder if it doesn't exist
+        # Add the row to the markdown table
+        markdown_table += generate_markdown_line([input_text, output_text, f"{response_time:.2f} seconds", f"{words_per_second:.4f}", f"{max_cpu_usage:.2f}%", f"{change_in_memory_usage:.2f} MB"])
+
+        # Create the visualisations folder if it doesn't exist
     visualisations_folder = os.path.join(folder_path, 'visualisations')
     if not os.path.exists(visualisations_folder):
         os.makedirs(visualisations_folder)
@@ -206,18 +223,12 @@ def generate_markdown_table_with_memory_change(folder_path):
         file.write(markdown_table)
 
 
-def main(model, prompt_file):
-    model_path = os.path.join('output', prompt_file, model)
-    folder_path = os.path.join(model_path, sorted(os.listdir(model_path))[-1])
+def run(model, prompt_file):
+    folder_path = utils.get_last_output(prompt_file, model)
     plot_cpu_usage_with_annotations(folder_path)
     plot_memory_usage_with_annotations(folder_path)
     generate_markdown_table_with_memory_change(folder_path)
 
 
 if __name__ == "__main__":
-    model = 'codellama:34b'
-    model_path = os.path.join('output', 'hello_world_prompts', model)
-    folder_path = os.path.join(model_path, sorted(os.listdir(model_path))[-1])
-    plot_cpu_usage_with_annotations(folder_path)
-    plot_memory_usage_with_annotations(folder_path)
-    generate_markdown_table_with_memory_change(folder_path)
+    run('codellama:34b' 'hello_world_prompts')

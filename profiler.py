@@ -12,7 +12,7 @@ import tty
 import termios
 import re
 
-import constants
+import utils
 
 # Initialize a lock for file operations
 lock = threading.Lock()
@@ -63,7 +63,7 @@ def monitor_process(pid, cpu_file, memory_file):
             virtual_memory = (p.memory_info().vms + ollama_serve_stats['virtual_memory_used']) / (
                     1024 * 1024)  # Convert bytes to MB
 
-            current_time = datetime.now().strftime(constants.datetime_format_with_microseconds)
+            current_time = datetime.now().strftime(utils.datetime_format_with_microseconds)
             with open(cpu_file, 'a', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerow([current_time, cpu_percent])
@@ -234,10 +234,10 @@ def main(args):
 
     if not args.prompt_file:
         output_folder = make_folder('output', model_name,
-                                    datetime.now().strftime(constants.datetime_format_with_microseconds) + '/')
+                                    datetime.now().strftime(utils.datetime_format_with_microseconds) + '/')
     else:
         output_folder = make_folder('output', args.prompt_file, model_name,
-                                    datetime.now().strftime(constants.datetime_format_with_microseconds) + '/')
+                                    datetime.now().strftime(utils.datetime_format_with_microseconds) + '/')
 
     master_fd, pid = spawn_process(command)
 
