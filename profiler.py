@@ -217,9 +217,6 @@ def spawn_process(command):
         return master_fd, pid
 
 
-
-
-
 # Main function to set up the profiler
 def main(args):
     command = args.command
@@ -229,10 +226,10 @@ def main(args):
 
     if not args.prompt_file:
         output_folder = utils.make_folder('output', model_name,
-                                    datetime.now().strftime(utils.datetime_format_with_microseconds) + '/')
+                                          datetime.now().strftime(utils.datetime_format_with_microseconds) + '/')
     else:
         output_folder = utils.make_folder('output', args.prompt_file, model_name,
-                                    datetime.now().strftime(utils.datetime_format_with_microseconds) + '/')
+                                          datetime.now().strftime(utils.datetime_format_with_microseconds) + '/')
 
     master_fd, pid = spawn_process(command)
 

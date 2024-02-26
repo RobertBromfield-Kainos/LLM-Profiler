@@ -6,6 +6,7 @@ This repository contains a suite of Python scripts designed to profile the perfo
 - `profiler.py`: Monitors and logs CPU and memory usage of a specified command.
 - `give_prompts.py`: Automates sending prompts from a CSV file to a command and integrates with visualization generation.
 - `create_visualisations.py`: Generates plots and summaries of CPU and memory usage based on logged data.
+- `run_all_models.py`: Runs `give_prompts.py` for all models then collates data into graphs found in the `all_models` folder 
 - `constants.py`: Defines constants used across the scripts.
 - `requirements.txt`: Lists the Python package dependencies for the project.
 
@@ -67,15 +68,26 @@ When the `give_prompts.py` file is run it will create the following files in the
 ```
 ├── output
 │   ├── <name of prompt file>
-│   │   ├── <timestamp of when it was run>
-│   │   │   ├── cpu_usage.csv
-│   │   │   ├── memory_usage.csv
-│   │   │   ├── input_response_file.csv
-│   │   │   ├── visualisations
-│   │   │   │   ├── cpu_usage.png
-│   │   │   │   ├── memory_usage.png
-│   │   │   │   ├── input_output_memory_change_table.md
+│   │   ├── all_models
+│   │   │   ├── <timestamp of when run_all_models.py was run>
+│   │   │   │   ├── amount_of_words.png
+│   │   │   │   ├── input_response_table.md
+│   │   │   │   ├── max_cpu_usage.png
+│   │   │   │   ├── max_memory_usage.png
+│   │   │   │   ├── time_taken.png
+│   │   │   │   ├── words_per_second.png
+│   │   ├── <model>
+│   │   │   ├── <timestamp of when give_prompts.py was run>
+│   │   │   │   ├── cpu_usage.csv
+│   │   │   │   ├── memory_usage.csv
+│   │   │   │   ├── input_response_file.csv
+│   │   │   │   ├── visualisations
+│   │   │   │   │   ├── cpu_usage.png
+│   │   │   │   │   ├── memory_usage.png
+│   │   │   │   │   ├── input_output_memory_change_table.md
 ```
+
+
 
 ### Explination of Output Files 
 
@@ -88,10 +100,34 @@ When the `give_prompts.py` file is run it will create the following files in the
 | visualisations/memory_usage.png                    | A line graph of the Memory Usage taken from `memory_usage.csv` <br />This contains two graphs which are for `Memory Usage (MB)` and `Virtual Memory Usage (MB)`<br /><br />Like the `visualisations/cpu_usage.png` this also has coloured bands denoting when the prompts were run |
 | visualisations/input_output_memory_change_table.md | This is a markdown table showing the any other relavent data |
 
-### Example of cpu_usage.png
+
+
+### Example graphs in `visualisations`
+
+#### `cpu_usage.png`
 
 ![example_cpu_usage](./.readme_images/example_cpu_usage.png)
 
-### Example of memory_usage.png
+#### `memory_usage.png`
 
 ### ![example_memory_usage](./.readme_images/example_memory_usage.png)
+
+### Example graphs in `all_models`
+
+#### `words_per_second.png`
+
+![words_per_second](./.readme_images/words_per_second.png)
+
+
+
+#### `amount_of_words.png`
+
+![amount_of_words](./.readme_images/amount_of_words.png)
+
+#### `max_cpu_usage.png`
+
+![max_cpu_usage](./.readme_images/max_cpu_usage.png)
+
+#### `max_memory_usage.png`
+
+![max_cpu_usage](./.readme_images/max_cpu_usage.png)

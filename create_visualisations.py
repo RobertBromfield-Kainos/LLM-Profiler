@@ -2,7 +2,6 @@ import itertools
 
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 import os
 from datetime import datetime, timedelta
 import utils
@@ -111,7 +110,7 @@ def plot_memory_usage_with_annotations(folder_path):
         color = next(colors)
         start, end = row['input_timestamp'], row['output_timestamp']
         for ax in axs:
-            ax.axvspan(start, end, color=color, alpha=0.3)
+            ax.axvspan(start, end, color=color, alpha=0.3, edgecolor='black')
 
     input_and_output_timestamps = pd.concat(
         [input_response_data['input_timestamp'], input_response_data['output_timestamp']]).unique()
