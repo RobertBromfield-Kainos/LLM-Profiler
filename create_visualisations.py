@@ -141,20 +141,7 @@ def plot_memory_usage_with_annotations(folder_path):
 
 
 
-def generate_markdown_line(items: list, is_header: bool = False) -> str:
-    """
-    Generate a markdown table line from a list of items
-    :param items: List of items to include in the line
-    :param is_header: Whether the line is a header line
-    :return: A markdown table line
-    """
-    line = "|"
-    for item in items:
-        line += f" {item} |"
-    line += "\n"
-    if is_header:
-        line += "|" + " --- |" * len(items) + "\n"
-    return line
+
 
 def generate_markdown_table_with_memory_change(folder_path):
     # Define paths to the CSV files
@@ -174,7 +161,7 @@ def generate_markdown_table_with_memory_change(folder_path):
     input_response_data['input_timestamp'] = pd.to_datetime(input_response_data['input_timestamp'])
     input_response_data['output_timestamp'] = pd.to_datetime(input_response_data['output_timestamp'])
 
-    markdown_table = generate_markdown_line(['Input', 'Output', 'Response Time', 'Words per Second', 'Max CPU Usage (%)', 'Change in Memory Usage (MB)'], True)
+    markdown_table = utils.generate_markdown_line(['Input', 'Output', 'Response Time', 'Words per Second', 'Max CPU Usage (%)', 'Change in Memory Usage (MB)'], True)
 
     # Loop through each row in input_response_data to calculate values and add to the table
     for index, row in input_response_data.iterrows():
@@ -210,7 +197,7 @@ def generate_markdown_table_with_memory_change(folder_path):
         words_per_second = len(output_text.replace('<br>',' ').split(' ')) / response_time
 
         # Add the row to the markdown table
-        markdown_table += generate_markdown_line([input_text, output_text, f"{response_time:.2f} seconds", f"{words_per_second:.4f}", f"{max_cpu_usage:.2f}%", f"{change_in_memory_usage:.2f} MB"])
+        markdown_table += utils.generate_markdown_line([input_text, output_text, f"{response_time:.2f} seconds", f"{words_per_second:.4f}", f"{max_cpu_usage:.2f}%", f"{change_in_memory_usage:.2f} MB"])
 
         # Create the visualisations folder if it doesn't exist
     visualisations_folder = os.path.join(folder_path, 'visualisations')

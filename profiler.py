@@ -116,7 +116,7 @@ def handle_input(master_fd, output_folder):
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, original_settings)
 
 
-def extract_text_between_patterns(text, start_pattern=r'[\u2800-\u28FF]+', end_pattern=r'>>>'):
+def extract_text_between_patterns(text, start_pattern=r'[\u2800-\u28FF]+', end_pattern=r'>>>') -> list[str]:
     # Compile patterns for efficiency if called multiple times
     start_regex = re.compile(start_pattern)
     end_regex = re.compile(end_pattern)
@@ -217,12 +217,7 @@ def spawn_process(command):
         return master_fd, pid
 
 
-def make_folder(*args):
-    """Create a folder with the given name if it doesn't exist. Return the folder path."""
-    folder = os.path.join(*args)
-    if not os.path.exists(folder):
-        os.makedirs(folder)
-    return folder
+
 
 
 # Main function to set up the profiler
@@ -233,10 +228,10 @@ def main(args):
     model_name = command.split()[-1]
 
     if not args.prompt_file:
-        output_folder = make_folder('output', model_name,
+        output_folder = utils.make_folder('output', model_name,
                                     datetime.now().strftime(utils.datetime_format_with_microseconds) + '/')
     else:
-        output_folder = make_folder('output', args.prompt_file, model_name,
+        output_folder = utils.make_folder('output', args.prompt_file, model_name,
                                     datetime.now().strftime(utils.datetime_format_with_microseconds) + '/')
 
     master_fd, pid = spawn_process(command)
