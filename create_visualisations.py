@@ -19,10 +19,8 @@ def plot_cpu_usage_with_annotations(folder_path):
 
     # Convert timestamps to datetime
     cpu_usage_data['Timestamp'] = pd.to_datetime(cpu_usage_data['Timestamp'])
-    input_response_data['input_timestamp'] = pd.to_datetime(input_response_data['input_timestamp']) - timedelta(
-        seconds=1)
-    input_response_data['output_timestamp'] = pd.to_datetime(input_response_data['output_timestamp']) + timedelta(
-        seconds=2)
+    input_response_data['input_timestamp'] = pd.to_datetime(input_response_data['input_timestamp'])
+    input_response_data['output_timestamp'] = pd.to_datetime(input_response_data['output_timestamp'])
 
     # Find the cutoff time: 2 seconds after the last output
     cutoff_time = input_response_data['output_timestamp'].max() + timedelta(seconds=2)
@@ -110,7 +108,7 @@ def plot_memory_usage_with_annotations(folder_path):
         color = next(colors)
         start, end = row['input_timestamp'], row['output_timestamp']
         for ax in axs:
-            ax.axvspan(start, end, color=color, alpha=0.3, edgecolor='black')
+            ax.axvspan(start, end, color=color, alpha=0.3)
 
     input_and_output_timestamps = pd.concat(
         [input_response_data['input_timestamp'], input_response_data['output_timestamp']]).unique()
@@ -137,9 +135,6 @@ def plot_memory_usage_with_annotations(folder_path):
     print(f"Plot saved to {plot_file_path}")
 
     plt.close(fig)  # Close the plot to free resources
-
-
-
 
 
 def generate_markdown_table_with_memory_change(folder_path):
@@ -210,7 +205,7 @@ def generate_markdown_table_with_memory_change(folder_path):
 
 
 def run(model, prompt_file):
-    folder_path = utils.get_last_output(prompt_file, model)
+    folder_path = utils.get_last_output_folder(prompt_file, model)
     plot_cpu_usage_with_annotations(folder_path)
     plot_memory_usage_with_annotations(folder_path)
     generate_markdown_table_with_memory_change(folder_path)

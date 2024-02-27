@@ -164,7 +164,7 @@ if __name__ == "__main__":
         give_prompts.run(prompt_file, model)
         print_header(f"Finished running {model}")
 
-        output_folder = utils.get_last_output(prompt_file, model)
+        output_folder = utils.get_last_output_folder(prompt_file, model)
         input_response_file = os.path.join(output_folder, "input_response_file.csv")
 
         words_per_second = []

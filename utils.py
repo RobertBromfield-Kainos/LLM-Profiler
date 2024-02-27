@@ -7,7 +7,7 @@ datetime_format_with_microseconds = '%Y-%m-%d %H:%M:%S.%f'
 datetime_format_no_microseconds = '%Y-%m-%d %H:%M:%S'
 
 
-def get_last_output(prompt_file: str, model: str) -> str:
+def get_last_output_folder(prompt_file: str, model: str) -> str:
     prompt_file = prompt_file.split(".")[0]
     model_path = os.path.join('output', prompt_file, model)
     return os.path.join(model_path, sorted(os.listdir(model_path))[-1])
