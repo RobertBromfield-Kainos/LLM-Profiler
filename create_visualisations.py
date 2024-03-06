@@ -191,7 +191,7 @@ def generate_markdown_table_with_memory_change(folder_path):
         words_per_second = len(output_text.replace('<br>',' ').split(' ')) / response_time
 
         # Add the row to the markdown table
-        markdown_table += utils.generate_markdown_line([input_text, output_text, f"{response_time:.2f} seconds", f"{words_per_second:.4f}", f"{max_cpu_usage:.2f}%", f"{change_in_memory_usage:.2f} MB"])
+        markdown_table += utils.generate_markdown_line(input_text, output_text, f"{response_time:.2f} seconds", f"{words_per_second:.4f}", f"{max_cpu_usage:.2f}%", f"{change_in_memory_usage:.2f} MB")
 
         # Create the visualisations folder if it doesn't exist
     visualisations_folder = os.path.join(folder_path, 'visualisations')

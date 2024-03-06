@@ -78,16 +78,6 @@ def create_bar_chart(data, key, y_label, filename, add_pre_prompts=False):
     plt.close(fig)
 
 
-def get_list_of_models() -> list:
-    # Run `ollama list` return contents of NAME column
-    cmd = "ollama list"
-    process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout, stderr = process.communicate()
-    lines = stdout.decode().strip().split('\n')[1:]
-    models = [line.split()[0] for line in lines]
-    return models
-
-
 def print_header(header_text: str) -> None:
     print('-' * len(header_text))
     print(header_text)
@@ -145,9 +135,8 @@ def get_max_of_column_grouped_by_prompt(column: str, csv_file: str, time_started
     return [max(cpu_group) for cpu_group in cpu_in_groups]
 
 
-if __name__ == "__main__":
-    prompt_file = sys.argv[1]
-    models = get_list_of_models()
+def run(prompt_file: str) -> None:
+    models = utils.get_list_of_models()
     # Remove 70b models from the list
     models = [model for model in models if model.split(':')[-1] != '70b']
     models = sort_models(models)
@@ -231,3 +220,8 @@ if __name__ == "__main__":
                      add_pre_prompts=True)
     create_bar_chart(data_dict, "max_memory_usage", "Max Memory Usage",
                      os.path.join(all_models_folder, "max_memory_usage.png"), add_pre_prompts=True)
+
+
+if __name__ == "__main__":
+    prompt_file = sys.argv[1]
+    run(prompt_file)
