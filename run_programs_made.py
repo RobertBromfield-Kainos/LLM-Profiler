@@ -71,6 +71,9 @@ if __name__ == "__main__":
 
     # Add optional argument for prompt file
     parser.add_argument('--run_all_models', action='store_true', help='Run the file run_all_models.py with the given prompt file.')
+
+    parser.add_argument('--api_flag', action='store_true', help='Run the file run_all_models.py with the given prompt file.')
+
     args = parser.parse_args()
     prompt_file = args.prompt_file
 
@@ -93,7 +96,7 @@ if __name__ == "__main__":
         expected_output_file = open(expected_output_file, "r")
         expected_output_file_contents = expected_output_file.readlines()
 
-        output_folder = utils.get_last_output_folder(prompt_file.split('.')[0], model)
+        output_folder = utils.get_last_output_folder(prompt_file.split('.')[0], model, args.api_flag)
         if output_folder is None:
             print(f"No output folder found for {model}")
             continue

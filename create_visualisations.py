@@ -204,8 +204,11 @@ def generate_markdown_table_with_memory_change(folder_path):
         file.write(markdown_table)
 
 
-def run(model, prompt_file):
-    folder_path = utils.get_last_output_folder(prompt_file, model)
+def run(model, prompt_file, api_flag=False):
+    folder_path = utils.get_last_output_folder(prompt_file, model, api_flag)
+
+    print('folder_path:',folder_path)
+
     plot_cpu_usage_with_annotations(folder_path)
     plot_memory_usage_with_annotations(folder_path)
     generate_markdown_table_with_memory_change(folder_path)
