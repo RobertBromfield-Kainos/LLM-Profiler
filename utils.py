@@ -124,5 +124,13 @@ def make_folder(*args) -> str:
         os.makedirs(folder)
     return folder
 
+def bold(text: str) -> str:
+    return "\033[1m" + text + "\033[0m"
+
+def print_header(header_text: str) -> None:
+    print('-' * len(header_text))
+    print(header_text)
+    print('-' * len(header_text))
+
 
 

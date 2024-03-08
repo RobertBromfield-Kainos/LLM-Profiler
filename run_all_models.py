@@ -1,7 +1,7 @@
 import itertools
 from datetime import datetime
 import os.path
-import sys
+import argparse
 import time
 from collections import defaultdict
 
@@ -98,13 +98,6 @@ def create_bar_chart(data, key, y_label, filename, add_pre_prompts=False):
     plt.savefig(filename)
     plt.close(fig)
 
-
-def print_header(header_text: str) -> None:
-    print('-' * len(header_text))
-    print(header_text)
-    print('-' * len(header_text))
-
-
 def get_max_of_column_grouped_by_prompt(column: str, csv_file: str, time_started: list, time_ended: list) -> list:
     try:
         cpu_in_groups = [[]]
@@ -159,7 +152,7 @@ def extract_columns_values(output_folder: str, filename: str, columns: list[str]
     return columns_data
 
 
-def run(prompt_file: str, api_flag: bool) -> None:
+def run(prompt_file: str, api_flag: bool, code_only: bool) -> None:
     models = utils.get_list_of_models()
     print('Currently available models -- ' + ' '.join(models))
 
@@ -172,12 +165,12 @@ def run(prompt_file: str, api_flag: bool) -> None:
                                           datetime.now().strftime(utils.datetime_format_with_microseconds))
 
     for model in models:
-        print_header(f"Running {model}")
+        utils.print_header(f"Running {model}")
         if not api_flag:
             give_prompts.run(prompt_file, model)
         else:
-            profiler_api.run(model, prompt_file)
-        print_header(f"Finished running {model}")
+            profiler_api.run(model, prompt_file, code_only)
+        utils.print_header(f"Finished running {model}")
 
         try:
             output_folder = utils.get_last_output_folder(prompt_file, model, api_flag)
@@ -221,7 +214,7 @@ def run(prompt_file: str, api_flag: bool) -> None:
             "time_started": time_started,
             "time_ended": time_ended
         }
-        print_header(f"Finished processing {model}")
+        utils.print_header(f"Finished processing {model}")
         time.sleep(5)
 
         cpu_usage_file = os.path.join(output_folder, "cpu_usage.csv")
@@ -271,8 +264,14 @@ def run(prompt_file: str, api_flag: bool) -> None:
 
 
 if __name__ == "__main__":
-    prompt_file = sys.argv[1]
+    parser = argparse.ArgumentParser(
+        description="Run all the prompts with all the models'.")
+    parser = argparse.ArgumentParser(description='Process command line arguments.')
+    parser.add_argument('prompt_file', type=str, help='The path to the prompt file.')
+    parser.add_argument('--api', action='store_true', help='Flag to use API.')
+    parser.add_argument('--code_only', action='store_true',
+                        help='If the prompts will only be code that needs to be completed')
 
-    api_flag = sys.argv[2] == "--api"
+    args = parser.parse_args()
 
-    run(prompt_file, api_flag)
+    run(args.prompt_file, args.api, args.code_only)

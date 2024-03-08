@@ -72,21 +72,44 @@ def monitor_process(output_folder):
             monitor_process(output_folder)
 
 
-def send_post_request(model, prompt, output_folder, time_submitted):
+def send_post_request(model: str, prompt: str, output_folder: str, time_submitted, code_only_flag: bool):
     url = "http://localhost:11434/api/generate"
-    payload = {
-        "model": model,
-        "prompt": prompt,
-        "stream": False
-    }
+
+    if not code_only_flag:
+        payload = {
+            "model": model,
+            "prompt": prompt,
+            "stream": False
+        }
+    else:
+        payload = {
+          "model": model,
+          "raw": True,
+          "keep_alive": 1800,
+          "options": {
+            "temperature": 0,
+            "num_predict": 1024,
+            "stop": [
+              "<fim_prefix>",
+              "<fim_suffix>",
+              "<fim_middle>",
+              "<|endoftext|>",
+              "\n\n",
+              "```"
+            ],
+            "num_ctx": 4096
+          },
+          "prompt": f"<fim_prefix>{prompt}<fim_suffix><fim_middle>",
+          "stream": False
+        }
 
     response = requests.post(url, json=payload)
     time_received = datetime.now()
 
     if response.status_code == 200:
-        print("Request successful.")
+        utils.print_header("Request successful.")
         response_data = response.json()
-        print('Prompt:', prompt)
+        print(utils.bold('Prompt:'), prompt)
         save_api_response(response_data, output_folder, prompt, time_submitted, time_received)
         save_other_response_data(response_data, output_folder)
     else:
@@ -98,8 +121,10 @@ def save_other_response_data(data, output_folder: str):
     response_data_path = os.path.join(output_folder, 'api_response_data.csv')
 
     # Define the headers and the data row
-    headers = ['total_duration', 'load_duration', 'prompt_eval_count', 'prompt_eval_duration', 'eval_count', 'eval_duration']
-    row = [data['total_duration'], data['load_duration'], data['prompt_eval_count'], data['prompt_eval_duration'], data['eval_count'], data['eval_duration']]
+    headers = ['total_duration', 'load_duration', 'prompt_eval_count', 'prompt_eval_duration', 'eval_count',
+               'eval_duration']
+    row = [data['total_duration'], data['load_duration'], data['prompt_eval_count'], data['prompt_eval_duration'],
+           data['eval_count'], data['eval_duration']]
 
     # Check if file exists to decide whether to write headers
     file_exists = os.path.isfile(response_data_path)
@@ -125,12 +150,12 @@ def save_api_response(response_data, output_folder, prompt, time_submitted, time
         response = response_data.get('response', '')
         response = response.replace('\n', '<br>')
 
-        print('Response:', response)
+        print(utils.bold('Response:'), response)
         line = f"{time_submitted.strftime(utils.datetime_format_with_microseconds)}|||{prompt}|||{time_received.strftime(utils.datetime_format_with_microseconds)}|||{response}\n"
         file.write(line)
 
 
-def run(model, prompt_file_name):
+def run(model: str, prompt_file_name: str, code_only_flag: bool):
     global stop_monitoring
     stop_monitoring = threading.Event()
     prompt_file_path = os.path.join('prompt_files', prompt_file_name)
@@ -145,7 +170,7 @@ def run(model, prompt_file_name):
 
     for prompt in prompts:
         time_submitted = datetime.now()
-        send_post_request(model, prompt, output_folder, time_submitted)
+        send_post_request(model, prompt, output_folder, time_submitted, code_only_flag)
         time.sleep(5)
 
     stop_monitoring.set()
@@ -158,7 +183,8 @@ if __name__ == "__main__":
         description="Send POST requests from prompts in a file and monitor 'ollama serve'.")
     parser.add_argument('--model', type=str, required=True, help='Model name for the API request')
     parser.add_argument('--prompt_file', type=str, required=True, help='Path to the prompt file')
+    parser.add_argument('--code_only', action='store_true',
+                        help='If the prompts will only be code that needs to be completed')
 
     args = parser.parse_args()
-    run(args.model, args.prompt_file)
-
+    run(args.model, args.prompt_file, args.code_only)
