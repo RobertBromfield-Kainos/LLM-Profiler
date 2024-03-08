@@ -1,6 +1,7 @@
-import datetime
+import re
 import os
 import subprocess
+from collections import defaultdict
 
 import pandas as pd
 
@@ -50,6 +51,55 @@ def generate_markdown_line(*items: str, is_header: bool = False) -> str:
         line += "|" + " --- |" * len(items) + "\n"
     return line
 
+def model_size(model: str) -> tuple:
+    # Split model string into components
+    parts = model.split(':')[-1].split('-')
+    size_part = parts[0]
+    suffix = '-'.join(parts[1:]) if len(parts) > 1 else ''
+
+    # Extract the numeric part before "b" for sorting
+    if size_part[:-1].isdigit() and size_part[-1] == 'b':
+        return (int(size_part[:-1]), suffix)
+    # Handle non-standard sizes, placing them last
+    return (float('inf'), suffix)
+
+
+def group_models(unsorted_models: list) -> dict:
+    grouped_models = defaultdict(list)
+    for model in unsorted_models:
+        # Use regular expression to match the parts of the model string
+        match = re.match(r'([^:]+):(\d+)b(.*)', model)
+        if match:
+            prefix = match.group(1)
+            suffix = match.group(3)
+            grouping_key = (prefix, suffix)
+            grouped_models[grouping_key].append(model)
+        else:
+            # Handle models without the specific ":<number>b" pattern by grouping them based on the entire model string
+            grouped_models[model].append(model)
+
+    # Sort models within each group
+    for key in grouped_models:
+        grouped_models[key] = sorted(grouped_models[key],
+                                     key=lambda x: int(re.search(r':(\d+)b', x).group(1)) if re.search(r':(\d+)b',
+                                                                                                       x) else 0)
+
+    return grouped_models
+
+
+def sort_models(unsorted_models: list) -> list:
+    # Group models by name on left of ":"
+    grouped_models = group_models(unsorted_models)
+
+    # Sort within groups by model size, then by any suffix
+    for name, model_group in grouped_models.items():
+        grouped_models[name] = sorted(model_group, key=lambda x: (model_size(x), x))
+
+    # Flatten sorted groups into a single list
+    sorted_models = [model for model_group in grouped_models.values() for model in model_group]
+
+    return sorted_models
+
 def get_list_of_models() -> list:
     # Run `ollama list` return contents of NAME column
     cmd = "ollama list"
@@ -57,6 +107,9 @@ def get_list_of_models() -> list:
     stdout, stderr = process.communicate()
     lines = stdout.decode().strip().split('\n')[1:]
     models = [line.split()[0] for line in lines]
+    # Remove 70b models from the list
+    models = [model for model in models if model.split(':')[-1] != '70b' and '_' not in model]
+    models = sort_models(models)
     return models
 
 

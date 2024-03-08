@@ -15,6 +15,12 @@ import pandas as pd
 import os
 
 
+def sort_data_dictionary(data: dict) -> dict:
+    unsorted_keys = list(data.keys())
+    sorted_keys = utils.sort_models(unsorted_keys)
+    return {key: data[key] for key in sorted_keys}
+
+
 def create_bar_chart(data, key, y_label, filename, add_pre_prompts=False):
     color_list = ['green', 'red', 'blue', 'yellow', 'purple', 'orange', 'cyan']
 
@@ -25,7 +31,11 @@ def create_bar_chart(data, key, y_label, filename, add_pre_prompts=False):
     colors = itertools.cycle(color_list)
     # Extracting and organizing values by their list positions
     grouped_values = {}
+
+    data = sort_data_dictionary(data)
+
     for model, details in data.items():
+
         if details[key] is None:
             continue
 
@@ -95,29 +105,6 @@ def print_header(header_text: str) -> None:
     print('-' * len(header_text))
 
 
-def model_size(model: str) -> int:
-    model_size = model.split(':')[-1]
-    # if model_size matches the pattern of a number followed by a "b", return the number as an integer
-    if model_size[:-1].isdigit() and model_size[-1] == 'b':
-        return int(model_size[:-1])
-    # otherwise, return 0
-    return 0
-
-
-def sort_models(unsorted_models: list) -> list:
-    # Group models by name on left of ":"
-    grouped_models = defaultdict(list)
-    for model in unsorted_models:
-        name = model.split(':')[0]
-        grouped_models[name].append(model)
-
-    # Sort by number on right of ":"
-    for name, mode_group in grouped_models.items():
-        grouped_models[name] = sorted(mode_group, key=lambda x: model_size(x))
-
-    return [model for model_group in grouped_models.values() for model in model_group]
-
-
 def get_max_of_column_grouped_by_prompt(column: str, csv_file: str, time_started: list, time_ended: list) -> list:
     try:
         cpu_in_groups = [[]]
@@ -144,7 +131,7 @@ def get_max_of_column_grouped_by_prompt(column: str, csv_file: str, time_started
                             cpu_in_groups[i + 1].append(float(line_dict[column]))
                             break
                         i += 1
-        print('cpu_in_groups:', cpu_in_groups)
+        # print('cpu_in_groups:', cpu_in_groups)
         return [max(cpu_group) for cpu_group in cpu_in_groups]
 
     except Exception as e:
@@ -174,9 +161,6 @@ def extract_columns_values(output_folder: str, filename: str, columns: list[str]
 
 def run(prompt_file: str, api_flag: bool) -> None:
     models = utils.get_list_of_models()
-    # Remove 70b models from the list
-    models = [model for model in models if model.split(':')[-1] != '70b' and '_' not in model]
-    models = sort_models(models)
     print('Currently available models -- ' + ' '.join(models))
 
     data_dict = {}
@@ -252,8 +236,8 @@ def run(prompt_file: str, api_flag: bool) -> None:
                                                                                    time_ended)
 
         if api_flag:
-            api_response_values = extract_columns_values(output_folder, 'api_response_data.csv', ['total_duration', 'eval_count','eval_duration'])
-            data_dict.update(api_response_values)
+            api_response_values = extract_columns_values(output_folder, 'api_response_data.csv', ['total_duration', 'eval_count','eval_duration', 'prompt_eval_duration'])
+            data_dict[model].update(api_response_values)
 
             data_dict[model]['tokens_per_second'] = [count / duration if duration != 0 else 0 for count, duration in zip(api_response_values['eval_count'], api_response_values['eval_duration'])]
 

@@ -2,9 +2,10 @@ import argparse
 import csv
 import os
 import requests
-from datetime import datetime, time
+from datetime import datetime
 import psutil
 import threading
+import time
 
 import create_visualisations
 import utils
@@ -145,7 +146,7 @@ def run(model, prompt_file_name):
     for prompt in prompts:
         time_submitted = datetime.now()
         send_post_request(model, prompt, output_folder, time_submitted)
-    print("END END")
+        time.sleep(5)
 
     stop_monitoring.set()
     monitor_thread.join()
