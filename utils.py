@@ -1,12 +1,22 @@
+import json
 import re
 import os
 import subprocess
+import traceback
 from collections import defaultdict
 
 import pandas as pd
 
 datetime_format_with_microseconds = '%Y-%m-%d %H:%M:%S.%f'
 datetime_format_no_microseconds = '%Y-%m-%d %H:%M:%S'
+
+
+def get_models_that_have_been_run(prompt_file: str, api_flag: bool) -> list[str]:
+    prompt_file = prompt_file.split(".")[0]
+    output = "output_api" if api_flag else "output"
+    prompt_output_folder = os.path.join(output, prompt_file)
+    return [name for name in os.listdir(prompt_output_folder) if
+            os.path.isdir(os.path.join(prompt_output_folder, name)) and name != 'all_models']
 
 
 def get_last_output_folder(prompt_file: str, model: str, api_flag: bool) -> str:
@@ -18,7 +28,6 @@ def get_last_output_folder(prompt_file: str, model: str, api_flag: bool) -> str:
         return os.path.join(model_path, sorted(os.listdir(model_path))[-1])
     except FileNotFoundError:
         return None
-
 
 def get_time_difference(start: str, end: str) -> float:
     start = pd.to_datetime(start)
@@ -32,7 +41,7 @@ def check_if_time_is_before(time: str, reference_time: str) -> bool:
     return time < reference_time
 
 
-def generate_markdown_line(*items: str, is_header: bool = False) -> str:
+def generate_markdown_line(*items: str | list, is_header: bool = False) -> str:
     """
     Generate a Markdown table line from a list of items
     :param items: List of items to include in the line
@@ -40,6 +49,10 @@ def generate_markdown_line(*items: str, is_header: bool = False) -> str:
     :return: A Markdown table line
     """
     line = "|"
+
+    if len(items) == 1 and isinstance(items[0], list):
+        items = items[0]
+
     for item in items:
         if isinstance(item, str):
             # Replace newlines with <br> for Markdown
@@ -50,6 +63,7 @@ def generate_markdown_line(*items: str, is_header: bool = False) -> str:
     if is_header:
         line += "|" + " --- |" * len(items) + "\n"
     return line
+
 
 def model_size(model: str) -> tuple:
     # Split model string into components
@@ -65,13 +79,16 @@ def model_size(model: str) -> tuple:
 
 
 def group_models(unsorted_models: list) -> dict:
+    pattern = r'([^:]+):(\d+(\.\d+)?)b(.*)'
+
     grouped_models = defaultdict(list)
     for model in unsorted_models:
         # Use regular expression to match the parts of the model string
-        match = re.match(r'([^:]+):(\d+)b(.*)', model)
+        match = re.match(pattern, model)
         if match:
             prefix = match.group(1)
-            suffix = match.group(3)
+            suffix = match.group(4)
+
             grouping_key = (prefix, suffix)
             grouped_models[grouping_key].append(model)
         else:
@@ -81,24 +98,19 @@ def group_models(unsorted_models: list) -> dict:
     # Sort models within each group
     for key in grouped_models:
         grouped_models[key] = sorted(grouped_models[key],
-                                     key=lambda x: int(re.search(r':(\d+)b', x).group(1)) if re.search(r':(\d+)b',
-                                                                                                       x) else 0)
-
+                                     key=lambda x: float(re.search(pattern, x).group(2)) if re.search(pattern,
+                                                                                                      x) else 0)
     return grouped_models
 
 
 def sort_models(unsorted_models: list) -> list:
     # Group models by name on left of ":"
     grouped_models = group_models(unsorted_models)
-
-    # Sort within groups by model size, then by any suffix
-    for name, model_group in grouped_models.items():
-        grouped_models[name] = sorted(model_group, key=lambda x: (model_size(x), x))
-
     # Flatten sorted groups into a single list
     sorted_models = [model for model_group in grouped_models.values() for model in model_group]
 
     return sorted_models
+
 
 def get_list_of_models() -> list:
     # Run `ollama list` return contents of NAME column
@@ -113,10 +125,6 @@ def get_list_of_models() -> list:
     return models
 
 
-if __name__ == "__main__":
-    a = 0
-    b = True
-
 def make_folder(*args) -> str:
     """Create a folder with the given name if it doesn't exist. Return the folder path."""
     folder = os.path.join(*args)
@@ -124,8 +132,18 @@ def make_folder(*args) -> str:
         os.makedirs(folder)
     return folder
 
+
 def bold(text: str) -> str:
     return "\033[1m" + text + "\033[0m"
+
+
+def red(text: str) -> str:
+    return "\033[91m" + text + "\033[0m"
+
+
+def green(text: str) -> str:
+    return "\033[92m" + text + "\033[0m"
+
 
 def print_header(header_text: str) -> None:
     print('-' * len(header_text))
@@ -133,4 +151,45 @@ def print_header(header_text: str) -> None:
     print('-' * len(header_text))
 
 
+def print_exception(message: str, e: Exception):
+    output = '-' * len(red(message))
+    output += red(message)
+    output += '-' * len(red(message))
+    output += ''.join(traceback.format_exception(None, e, e.__traceback__))
+    print(output)
 
+def nanoseconds_to_human_readable(ns):
+    # Constants for conversions
+    nanoseconds_per_microsecond = 1000
+    nanoseconds_per_millisecond = nanoseconds_per_microsecond * 1000
+    nanoseconds_per_second = nanoseconds_per_millisecond * 1000
+    nanoseconds_per_minute = nanoseconds_per_second * 60
+    nanoseconds_per_hour = nanoseconds_per_minute * 60
+    nanoseconds_per_day = nanoseconds_per_hour * 24
+
+    # Calculations for each unit of time
+    days = ns // nanoseconds_per_day
+    ns %= nanoseconds_per_day
+    hours = ns // nanoseconds_per_hour
+    ns %= nanoseconds_per_hour
+    minutes = ns // nanoseconds_per_minute
+    ns %= nanoseconds_per_minute
+    seconds = ns // nanoseconds_per_second
+    ns %= nanoseconds_per_second
+    # milliseconds = ns // nanoseconds_per_millisecond
+    # ns %= nanoseconds_per_millisecond
+    microseconds = ns // nanoseconds_per_microsecond
+    ns %= nanoseconds_per_microsecond
+
+    # Building the readable string conditionally
+    parts = []
+    if days > 0: parts.append(f"{days} days")
+    if hours > 0: parts.append(f"{hours} hours")
+    if minutes > 0: parts.append(f"{minutes} minutes")
+    if seconds > 0: parts.append(f"{seconds} seconds")
+    if microseconds > 0: parts.append(f"{microseconds} microseconds")
+
+    # Joining the non-zero parts or returning '0 nanoseconds' if all are zero
+    readable_time = ", ".join(parts) if parts else "0 nanoseconds"
+
+    return readable_time

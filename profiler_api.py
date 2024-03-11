@@ -75,6 +75,7 @@ def monitor_process(output_folder):
 def send_post_request(model: str, prompt: str, output_folder: str, time_submitted, code_only_flag: bool):
     url = "http://localhost:11434/api/generate"
 
+    prompt = prompt.replace('\\n', '\n')
     if not code_only_flag:
         payload = {
             "model": model,
@@ -109,6 +110,7 @@ def send_post_request(model: str, prompt: str, output_folder: str, time_submitte
     if response.status_code == 200:
         utils.print_header("Request successful.")
         response_data = response.json()
+
         print(utils.bold('Prompt:'), prompt)
         save_api_response(response_data, output_folder, prompt, time_submitted, time_received)
         save_other_response_data(response_data, output_folder)
@@ -149,6 +151,7 @@ def save_api_response(response_data, output_folder, prompt, time_submitted, time
         # Directly format and write the string with "|||" as the delimiter
         response = response_data.get('response', '')
         response = response.replace('\n', '<br>')
+        response = response.replace('\r', '<br>')
 
         print(utils.bold('Response:'), response)
         line = f"{time_submitted.strftime(utils.datetime_format_with_microseconds)}|||{prompt}|||{time_received.strftime(utils.datetime_format_with_microseconds)}|||{response}\n"
@@ -166,8 +169,6 @@ def run(model: str, prompt_file_name: str, code_only_flag: bool):
     monitor_thread = threading.Thread(target=monitor_process, args=(output_folder,))
     monitor_thread.start()
 
-    print('PROMPTS ---', prompts)
-
     for prompt in prompts:
         time_submitted = datetime.now()
         send_post_request(model, prompt, output_folder, time_submitted, code_only_flag)
@@ -175,7 +176,10 @@ def run(model: str, prompt_file_name: str, code_only_flag: bool):
 
     stop_monitoring.set()
     monitor_thread.join()
-    create_visualisations.run(model, prompt_file_name, True)
+    try:
+        create_visualisations.run(model, prompt_file_name, True)
+    except Exception as e:
+        utils.print_exception(f'Create Visualisations failed for model: {model}', e)
 
 
 if __name__ == "__main__":

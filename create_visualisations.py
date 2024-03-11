@@ -17,6 +17,9 @@ def plot_cpu_usage_with_annotations(folder_path):
     input_response_data = pd.read_csv(input_response_file_path, sep='\\|\\|\\|', engine='python', header=None,
                                       names=['input_timestamp', 'input', 'output_timestamp', 'output'])
 
+    # Cut CSV to first 15 rows
+    input_response_data = input_response_data.head(15)
+
     # Convert timestamps to datetime
     cpu_usage_data['Timestamp'] = pd.to_datetime(cpu_usage_data['Timestamp'])
     input_response_data['input_timestamp'] = pd.to_datetime(input_response_data['input_timestamp'])
@@ -29,7 +32,7 @@ def plot_cpu_usage_with_annotations(folder_path):
     cpu_usage_data = cpu_usage_data[cpu_usage_data['Timestamp'] <= cutoff_time]
 
     # Plotting
-    plt.figure(figsize=(15, 8))
+    plt.figure(figsize=(3*len(input_response_data['input_timestamp']), 8))
     ax = plt.gca()  # Get current axes to set up the formatter and locator for the x-axis dates
 
     # Plot the entire CPU usage data first
@@ -79,6 +82,9 @@ def plot_memory_usage_with_annotations(folder_path):
     input_response_data = pd.read_csv(input_response_file_path, sep='\\|\\|\\|', engine='python', header=None,
                                       names=['input_timestamp', 'input', 'output_timestamp', 'output'])
 
+    # Cut CSV to first 15 rows
+    input_response_data = input_response_data.head(15)
+
     # Convert timestamps to datetime
     memory_usage_data['Timestamp'] = pd.to_datetime(memory_usage_data['Timestamp'])
     input_response_data['input_timestamp'] = pd.to_datetime(input_response_data['input_timestamp'])
@@ -91,7 +97,7 @@ def plot_memory_usage_with_annotations(folder_path):
     memory_usage_data = memory_usage_data[memory_usage_data['Timestamp'] <= cutoff_time]
 
     # Set up the subplot environment
-    fig, axs = plt.subplots(2, 1, figsize=(15, 12), sharex=True)
+    fig, axs = plt.subplots(2, 1, figsize=(3*len(input_response_data['input_timestamp']), 12), sharex=True)
 
     # Plot physical memory usage
     axs[0].plot(memory_usage_data['Timestamp'], memory_usage_data['Memory Usage (MB)'], color='blue', alpha=0.5,
@@ -159,8 +165,8 @@ def generate_markdown_table_with_memory_change(folder_path):
 
     # Loop through each row in input_response_data to calculate values and add to the table
     for index, row in input_response_data.iterrows():
-        input_text = row['input'].strip()
-        output_text = row['output'].strip()
+        input_text = str(row['input']).strip()
+        output_text = str(row['output']).strip()
         response_time = (row['output_timestamp'] - row['input_timestamp']).total_seconds()
 
         # Find the maximum CPU usage during the interval of this input-output

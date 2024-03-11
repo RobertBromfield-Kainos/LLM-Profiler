@@ -62,8 +62,6 @@ def extract_code(text: str) -> str:
 
 if __name__ == "__main__":
     test_folder = 'tests'
-    # prompt_file = "hello_world_prompts.csv"
-
 
     parser = argparse.ArgumentParser(
         description="Profile a command's CPU and memory usage and log input leading to output.")
@@ -90,7 +88,6 @@ if __name__ == "__main__":
         code_dict = {}
         passed_dict = {}
 
-        # print(languages)
 
         expected_output_file = os.path.join(test_folder, prompt_file.replace('_prompts.csv', '_expected_output_input.csv'))
         expected_output_file = open(expected_output_file, "r")
@@ -124,8 +121,6 @@ if __name__ == "__main__":
             dict[programming_language].save("test", code)
 
             command = dict[programming_language].get_command("test")
-
-            # print('-->', command)
 
             expected_output = ''
 

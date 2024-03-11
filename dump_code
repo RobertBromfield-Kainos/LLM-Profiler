@@ -1,0 +1,30 @@
+    #     # Calculate lines of code (LOC)
+    #     loc = full_code.count('\n') + 1
+    #     total_loc += loc
+    #
+    #     # Calculate cyclomatic complexity
+    #     # (simplified, counts number of decision points)
+    #     complexity = full_code.count('if') + full_code.count('for') + \
+    #                  full_code.count('while') + full_code.count('and') + \
+    #                  full_code.count('or')
+    #     total_complexity += complexity
+    #
+    #     # Calculate maintainability index
+    #     # (simplified, based on Halstead volume)
+    #     n1 = len(set(full_code.split()))  # number of unique operators
+    #     n2 = full_code.count(' ') + 1  # number of unique operands
+    #     volume = (n1 + n2) * log2(n1 + n2)
+    #     maintainability_index = max(0, (171 - 5.2 * log(volume) - 0.23 * complexity - 16.2 * log(loc)) * 100 / 171)
+    #     total_maintainability_index += maintainability_index
+    #
+    #     total_time += time
+    #
+    # metrics = {
+    #     'Correctness': correct_responses / total_prompts,
+    #     'Average LOC': total_loc / total_prompts,
+    #     'Average Cyclomatic Complexity': total_complexity / total_prompts,
+    #     'Average Maintainability Index': total_maintainability_index / total_prompts,
+    #     'Average Response Time': total_time / total_prompts
+    # }
+    #
+    # return metrics
