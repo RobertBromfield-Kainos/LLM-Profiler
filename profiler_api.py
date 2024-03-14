@@ -153,6 +153,9 @@ def save_api_response(response_data, output_folder, prompt, time_submitted, time
         response = response.replace('\n', '<br>')
         response = response.replace('\r', '<br>')
 
+        prompt = prompt.replace('\n', '<br>')
+        prompt = prompt.replace('\r', '<br>')
+
         print(utils.bold('Response:'), response)
         line = f"{time_submitted.strftime(utils.datetime_format_with_microseconds)}|||{prompt}|||{time_received.strftime(utils.datetime_format_with_microseconds)}|||{response}\n"
         file.write(line)

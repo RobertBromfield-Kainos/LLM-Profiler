@@ -212,6 +212,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Process command line arguments.')
     parser.add_argument('prompt_file', type=str, help='The path to the prompt file.')
+    parser.add_argument('--models', type=str, help='If you only want to run some models')
     args = parser.parse_args()
 
     prompts_csv_file_name = args.prompt_file
@@ -230,6 +231,10 @@ if __name__ == "__main__":
                                                           'Average Duration of Prompt', 'Max Duration of Prompt',
                                                           is_header=True)
     markdown_table_file.write(markdown_table_headers)
+
+    optional_models = args.models
+    if optional_models is not None:
+        all_run_models = [m for m in all_run_models if m in optional_models.split(',')]
 
     for model in all_run_models:
         utils.print_header(utils.red(model))
@@ -287,7 +292,8 @@ if __name__ == "__main__":
         entry_points = entry_points[0].split(',')
 
         (completely_correct_responses, success_with_tab_added, correct_with_just_response,
-         assertion_errors, syntax_errors, other_errors, empty_responses) = evaluate_code(prompts, responses, tests, entry_points)
+         assertion_errors, syntax_errors, other_errors, empty_responses) = evaluate_code(prompts, responses, tests,
+                                                                                         entry_points)
 
         all_successes = completely_correct_responses + success_with_tab_added + correct_with_just_response
 

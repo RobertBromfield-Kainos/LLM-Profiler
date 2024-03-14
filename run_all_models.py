@@ -314,6 +314,8 @@ def run(prompt_file: str, api_flag: bool, code_only: bool, optional_models: str,
     if api_flag:
         create_bar_chart(data_dict, "total_duration", "API Total Duration",
                          os.path.join(all_models_folder, "api_total_duration.png"))
+        create_bar_chart(data_dict, "eval_count", "Amount of Tokens",
+                         os.path.join(all_models_folder, "api_amount_of_token_duration.png"))
         create_bar_chart(data_dict, "tokens_per_second", "API Tokens Per Second",
                          os.path.join(all_models_folder, "api_tokens_per_second.png"))
         create_bar_chart(data_dict, "prompt_eval_duration", "API Time to Evaluate the Prompt",
