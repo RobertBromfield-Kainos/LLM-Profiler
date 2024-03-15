@@ -64,7 +64,7 @@ if __name__ == "__main__":
     test_folder = 'tests'
 
     parser = argparse.ArgumentParser(
-        description="Profile a command's CPU and memory usage and log input leading to output.")
+        description="Runs the responses given from the models and compares them to the expected output")
     parser.add_argument('prompt_file', type=str, help='The prompt file to use')
 
     # Add optional argument for prompt file

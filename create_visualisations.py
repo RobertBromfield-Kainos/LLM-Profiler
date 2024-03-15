@@ -218,7 +218,3 @@ def run(model, prompt_file, api_flag=False):
     plot_cpu_usage_with_annotations(folder_path)
     plot_memory_usage_with_annotations(folder_path)
     generate_markdown_table_with_memory_change(folder_path)
-
-
-if __name__ == "__main__":
-    run('codellama:34b' 'hello_world_prompts')

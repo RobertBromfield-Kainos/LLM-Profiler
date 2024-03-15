@@ -1,5 +1,6 @@
 import argparse
 import csv
+import json
 import os
 import requests
 from datetime import datetime
@@ -84,25 +85,27 @@ def send_post_request(model: str, prompt: str, output_folder: str, time_submitte
         }
     else:
         payload = {
-          "model": model,
-          "raw": True,
-          "keep_alive": 1800,
-          "options": {
-            "temperature": 0,
-            "num_predict": 1024,
-            "stop": [
-              "<fim_prefix>",
-              "<fim_suffix>",
-              "<fim_middle>",
-              "<|endoftext|>",
-              "\n\n",
-              "```"
-            ],
-            "num_ctx": 4096
-          },
-          "prompt": f"<fim_prefix>{prompt}<fim_suffix><fim_middle>",
-          "stream": False
+            "model": model,
+            "raw": True,
+            "keep_alive": 1800,
+            "options": {
+                "temperature": 0,
+                "num_predict": 1024,
+                "stop": [
+                    "<fim_prefix>",
+                    "<fim_suffix>",
+                    "<fim_middle>",
+                    "<|endoftext|>",
+                    "\n\n",
+                    "```"
+                ],
+                "num_ctx": 4096
+            },
+            "prompt": f"<fim_prefix>{prompt}<fim_suffix><fim_middle>",
+            "stream": False
         }
+
+    print(utils.bold('Sending Request:\n'), json.dumps(payload, indent=4))
 
     response = requests.post(url, json=payload)
     time_received = datetime.now()
@@ -173,9 +176,11 @@ def run(model: str, prompt_file_name: str, code_only_flag: bool):
     monitor_thread.start()
 
     for prompt in prompts:
+        print(utils.bold('-'*200))
         time_submitted = datetime.now()
         send_post_request(model, prompt, output_folder, time_submitted, code_only_flag)
         time.sleep(5)
+        print(utils.bold('-' * 200))
 
     stop_monitoring.set()
     monitor_thread.join()
