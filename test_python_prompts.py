@@ -5,9 +5,6 @@ import os.path
 import re
 import traceback
 from enum import Enum, auto
-
-import autopep8
-
 import run_all_models
 import utils
 

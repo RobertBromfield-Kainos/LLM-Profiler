@@ -6,15 +6,16 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 import os.path
 from collections import defaultdict
-
 import give_prompts
 import profiler_api
 import utils
-
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import os
+import matplotlib
+# Set the backend to 'Agg' to avoid GUI-related operations. Needs to be done before importing pyplot.
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 
 def sort_data_dictionary(data: dict) -> dict:
@@ -47,7 +48,6 @@ def create_bar_chart(data, key, y_label, filename, add_pre_prompts=False):
             # # Only append if the current list has less than 5 items
             # if len(grouped_values[i]) < 5:
             grouped_values[i].append(value)
-
 
     # Remove empty lists
 
@@ -86,7 +86,7 @@ def create_bar_chart(data, key, y_label, filename, add_pre_prompts=False):
                 label = f'Prompt {i}'
         color = next(colors)
 
-        print('',len(bar_positions), len(val))  # Add similar checks for other arrays if applicable
+        print('', len(bar_positions), len(val))  # Add similar checks for other arrays if applicable
 
         ax.bar(bar_positions, val, bar_width, label=label, color=color, alpha=0.4, edgecolor='black')
 
@@ -108,7 +108,8 @@ def create_bar_chart(data, key, y_label, filename, add_pre_prompts=False):
 
 def get_max_of_column_grouped_by_prompt(column: str, csv_file: str, time_started: list, time_ended: list) -> list:
     # Convert time strings to datetime objects for comparison
-    time_ranges = [(datetime.strptime(start, utils.datetime_format_with_microseconds), datetime.strptime(end, utils.datetime_format_with_microseconds)) for
+    time_ranges = [(datetime.strptime(start, utils.datetime_format_with_microseconds),
+                    datetime.strptime(end, utils.datetime_format_with_microseconds)) for
                    start, end in zip(time_started, time_ended)]
 
     # Initialize a dictionary to hold the max values for each time range, keys are index of the time range
@@ -139,8 +140,6 @@ def get_max_of_column_grouped_by_prompt(column: str, csv_file: str, time_started
         return []
 
 
-
-
 def extract_columns_values(output_folder: str, filename: str, columns: list[str]) -> dict:
     """
     Extracts all values from specified columns in a CSV file and returns them as a dictionary
@@ -164,7 +163,7 @@ def extract_columns_values(output_folder: str, filename: str, columns: list[str]
     return columns_data
 
 
-def process_input_response_file(input_response_file: str,output_folder: str, api_flag: bool):
+def process_input_response_file(input_response_file: str, output_folder: str, api_flag: bool):
     # Initialize data structures for results
     words_per_second_list, response_list, time_taken_list, amount_of_words_list, time_started_list, time_ended_list = [], [], [], [], [], []
 
@@ -185,7 +184,7 @@ def process_input_response_file(input_response_file: str,output_folder: str, api
                 time_ended_list.append(response_time)
                 # Add other necessary processing here
             except Exception as e:
-                utils.print_exception(f'Too few values on line {i+1} of input_response_file.csv', e)
+                utils.print_exception(f'Too few values on line {i + 1} of input_response_file.csv', e)
             if i > 15:  # Limit to first 16 lines for demo
                 break
             i += 1
@@ -201,11 +200,12 @@ def process_input_response_file(input_response_file: str,output_folder: str, api
 
     cpu_usage_file = os.path.join(output_folder, "cpu_usage.csv")
     output_dictionary["max_cpu_usage"] = get_max_of_column_grouped_by_prompt('CPU Usage (%)', cpu_usage_file,
-                                                                            time_started_list,time_ended_list)
+                                                                             time_started_list, time_ended_list)
 
     memory_usage_file = os.path.join(output_folder, "memory_usage.csv")
     output_dictionary["max_memory_usage"] = get_max_of_column_grouped_by_prompt('Memory Usage (MB)',
-                                                                               memory_usage_file,time_started_list, time_ended_list)
+                                                                                memory_usage_file, time_started_list,
+                                                                                time_ended_list)
 
     if api_flag:
         api_response_values = extract_columns_values(output_folder, 'api_response_data.csv',
@@ -214,12 +214,11 @@ def process_input_response_file(input_response_file: str,output_folder: str, api
         output_dictionary.update(api_response_values)
 
         output_dictionary['tokens_per_second'] = [count / duration if duration != 0 else 0 for count, duration in
-                                                 zip(api_response_values['eval_count'],
-                                                     api_response_values['eval_duration'])]
+                                                  zip(api_response_values['eval_count'],
+                                                      api_response_values['eval_duration'])]
 
     # Replace this return statement with your actual data structure
     return output_dictionary
-
 
 
 def process_model(model: str, prompt_file: str, do_not_run: bool, api_flag: bool, code_only: bool):
@@ -249,8 +248,6 @@ def process_model(model: str, prompt_file: str, do_not_run: bool, api_flag: bool
         return future.result()
 
 
-
-
 def run(prompt_file: str, api_flag: bool, code_only: bool, optional_models: str, do_not_run: bool) -> None:
     models = utils.get_list_of_models()
 
@@ -278,7 +275,8 @@ def run(prompt_file: str, api_flag: bool, code_only: bool, optional_models: str,
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
         # Create a future for each call to process_model
-        future_to_model = {executor.submit(process_model, model, prompt_file, do_not_run, api_flag, code_only): model for model in
+        future_to_model = {executor.submit(process_model, model, prompt_file, do_not_run, api_flag, code_only): model
+                           for model in
                            models}
 
         # As each future completes, its result is added to data_dict
@@ -289,7 +287,6 @@ def run(prompt_file: str, api_flag: bool, code_only: bool, optional_models: str,
                 data_dict[model] = result  # Store the result using model as the key
             except Exception as exc:
                 print(f'{model} generated an exception: {exc}')
-
 
     input_response_table = open(os.path.join(all_models_folder, "input_response_table.md"), "w")
 

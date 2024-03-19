@@ -5,6 +5,8 @@ import time
 import pexpect
 import sys
 import create_visualisations
+import utils
+
 
 def preprocess_csv_content(csv_file_path):
     """Process the CSV file to replace custom delimiters with standard newlines."""
@@ -41,33 +43,8 @@ def main(csv_file_path, command):
         print("The command timed out waiting for an expected prompt.")
 
 
-
-def close_ollama():
-    try:
-        path_prefix = "/Applications/Ollama.app"
-        # Escape special characters for use in the grep command
-
-        # List all processes and grep for those starting with the specified path
-        # Using awk to print the first column (PID) only if the rest of the line matches the path
-        cmd = f"ps -eo pid,command | grep -E '{path_prefix}' | awk '{{print $1}}'"
-
-        print(cmd)
-        process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, stderr = process.communicate()
-
-        # Extract PIDs
-        pids = stdout.decode().strip().split('\n')
-
-        for pid in pids:
-            if pid.isdigit():
-                print(f"Terminating process with PID: {pid}")
-                subprocess.run(["kill", "-9", pid])
-    except Exception as e:
-        print(f"An error occurred: {e}")
-
-
 if __name__ == "__main__":
-    close_ollama()
+    utils.close_ollama()
     if len(sys.argv) < 3:
         print("Usage: script.py <filename.csv> <command>")
         sys.exit(1)
@@ -79,7 +56,7 @@ if __name__ == "__main__":
     main(prompt_file, command)
 
     create_visualisations.run(model, prompt_file.split(".")[0])
-    close_ollama()
+    utils.close_ollama()
 
 
 def run(csv_file, model):

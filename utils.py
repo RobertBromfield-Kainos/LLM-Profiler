@@ -193,3 +193,26 @@ def nanoseconds_to_human_readable(ns):
     readable_time = ", ".join(parts) if parts else "0 nanoseconds"
 
     return readable_time
+
+def close_ollama():
+    try:
+        path_prefix = "/Applications/Ollama.app"
+        # Escape special characters for use in the grep command
+
+        # List all processes and grep for those starting with the specified path
+        # Using awk to print the first column (PID) only if the rest of the line matches the path
+        cmd = f"ps -eo pid,command | grep -E '{path_prefix}' | awk '{{print $1}}'"
+
+        process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = process.communicate()
+
+        # Extract PIDs
+        pids = stdout.decode().strip().split('\n')
+
+        for pid in pids:
+            if pid.isdigit():
+                print(f"Terminating process with PID: {pid}")
+                subprocess.run(["kill", "-9", pid])
+    except Exception as e:
+        print(f"An error occurred: {e}")
+

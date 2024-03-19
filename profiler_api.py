@@ -163,6 +163,21 @@ def save_api_response(response_data, output_folder, prompt, time_submitted, time
         line = f"{time_submitted.strftime(utils.datetime_format_with_microseconds)}|||{prompt}|||{time_received.strftime(utils.datetime_format_with_microseconds)}|||{response}\n"
         file.write(line)
 
+def wait_for_ollama():
+    """
+    Wait for 'ollama serve' to start.
+    """
+    while True:
+        stats = get_usage_stats('/Applications/Ollama.app/Contents/Resources/ollama serve')
+        if stats:
+            return
+        time.sleep(1)
+
+def run_ollama():
+    """
+    Run 'ollama serve' in a separate process.
+    """
+    os.system('open -a Terminal.app /Applications/Ollama.app/Contents/Resources/ollama serve')
 
 def run(model: str, prompt_file_name: str, code_only_flag: bool):
     global stop_monitoring
@@ -191,6 +206,11 @@ def run(model: str, prompt_file_name: str, code_only_flag: bool):
 
 
 if __name__ == "__main__":
+    utils.close_ollama()
+    time.sleep(5)
+    run_ollama()
+    wait_for_ollama()
+
     parser = argparse.ArgumentParser(
         description="Send POST requests from prompts in a file and monitor 'ollama serve'.")
     parser.add_argument('--model', type=str, required=True, help='Model name for the API request')
