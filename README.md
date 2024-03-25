@@ -9,7 +9,7 @@ This repository contains a suite of Python scripts designed to profile the perfo
 3. Ensure you have [ollama](https://github.com/ollama/ollama) installed
 4. Install the required dependencies by running `pip install -r requirements.txt` in your terminal.
 
-5. Before profiling a model please insure it has been installed and is working with ollama
+5. Before profiling a model please ensure it has been installed and is working with ollama
 
 ​	You can do this by using the command
 ```bash
