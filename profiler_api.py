@@ -122,24 +122,27 @@ def send_post_request(model: str, prompt: str, output_folder: str, time_submitte
 
 
 def save_other_response_data(data, output_folder: str):
-    # Define the path for the CSV file
-    response_data_path = os.path.join(output_folder, 'api_response_data.csv')
+    try:
+        # Define the path for the CSV file
+        response_data_path = os.path.join(output_folder, 'api_response_data.csv')
 
-    # Define the headers and the data row
-    headers = ['total_duration', 'load_duration', 'prompt_eval_count', 'prompt_eval_duration', 'eval_count',
-               'eval_duration']
-    row = [data['total_duration'], data['load_duration'], data['prompt_eval_count'], data['prompt_eval_duration'],
-           data['eval_count'], data['eval_duration']]
+        # Define the headers and the data row
+        headers = ['total_duration', 'load_duration', 'prompt_eval_count', 'prompt_eval_duration', 'eval_count',
+                   'eval_duration']
+        row = [data['total_duration'], data['load_duration'], data['prompt_eval_count'], data['prompt_eval_duration'],
+               data['eval_count'], data['eval_duration']]
 
-    # Check if file exists to decide whether to write headers
-    file_exists = os.path.isfile(response_data_path)
+        # Check if file exists to decide whether to write headers
+        file_exists = os.path.isfile(response_data_path)
 
-    # Open the file in append mode and write the data
-    with open(response_data_path, 'a', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-        if not file_exists:
-            writer.writerow(headers)  # Write headers if file does not exist
-        writer.writerow(row)
+        # Open the file in append mode and write the data
+        with open(response_data_path, 'a', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            if not file_exists:
+                writer.writerow(headers)  # Write headers if file does not exist
+            writer.writerow(row)
+    except Exception as e:
+        utils.print_header(e)
 
 
 def read_prompts_from_file(prompt_file_path):
