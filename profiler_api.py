@@ -142,7 +142,7 @@ def save_other_response_data(data, output_folder: str):
                 writer.writerow(headers)  # Write headers if file does not exist
             writer.writerow(row)
     except Exception as e:
-        utils.print_header(e)
+        print(str(e))
 
 
 def read_prompts_from_file(prompt_file_path):
