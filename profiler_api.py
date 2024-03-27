@@ -53,7 +53,7 @@ def monitor_process(output_folder):
             writer.writerow(['Timestamp', 'Memory Usage (MB)', 'Virtual Memory Usage (MB)'])
 
         while not stop_monitoring.is_set():
-            stats = get_usage_stats('/Applications/Ollama.app/Contents/Resources/ollama serve')
+            stats = get_usage_stats(utils.ollama_serve)
             if stats:
                 current_time = datetime.now().strftime(utils.datetime_format_with_microseconds)
                 with open(cpu_file, 'a', newline='') as file:
@@ -171,7 +171,7 @@ def wait_for_ollama():
     Wait for 'ollama serve' to start.
     """
     while True:
-        stats = get_usage_stats('/Applications/Ollama.app/Contents/Resources/ollama serve')
+        stats = get_usage_stats(utils.ollama_serve)
         if stats:
             return
         time.sleep(1)

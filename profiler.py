@@ -55,7 +55,7 @@ def monitor_process(pid, cpu_file, memory_file):
     try:
         p = psutil.Process(pid)
         while p.is_running():
-            ollama_serve_stats = get_usage_stats('/Applications/Ollama.app/Contents/Resources/ollama serve')
+            ollama_serve_stats = get_usage_stats(utils.ollama_serve)
 
             cpu_percent = p.cpu_percent(interval=0) + ollama_serve_stats['cpu_percent']
             memory_info = (p.memory_info().rss + ollama_serve_stats['memory_used']) / (

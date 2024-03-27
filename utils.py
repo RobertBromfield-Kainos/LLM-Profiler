@@ -10,6 +10,8 @@ import pandas as pd
 datetime_format_with_microseconds = '%Y-%m-%d %H:%M:%S.%f'
 datetime_format_no_microseconds = '%Y-%m-%d %H:%M:%S'
 
+ollama_serve = '/Applications/Ollama.app/Contents/Resources/ollama serve'
+
 
 def get_models_that_have_been_run(prompt_file: str, api_flag: bool) -> list[str]:
     prompt_file = prompt_file.split(".")[0]
