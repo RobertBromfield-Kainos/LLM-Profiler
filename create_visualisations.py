@@ -161,7 +161,7 @@ def generate_markdown_table_with_memory_change(folder_path):
     input_response_data['input_timestamp'] = pd.to_datetime(input_response_data['input_timestamp'])
     input_response_data['output_timestamp'] = pd.to_datetime(input_response_data['output_timestamp'])
 
-    markdown_table = utils.generate_markdown_line(['Input', 'Output', 'Response Time', 'Words per Second', 'Max CPU Usage (%)', 'Change in Memory Usage (MB)'], True)
+    markdown_table = utils.generate_markdown_line('Input', 'Output', 'Response Time', 'Words per Second', 'Max CPU Usage (%)', 'Change in Memory Usage (MB)', is_header=True)
 
     # Loop through each row in input_response_data to calculate values and add to the table
     for index, row in input_response_data.iterrows():

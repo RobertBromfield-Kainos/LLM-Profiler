@@ -43,7 +43,7 @@ def check_if_time_is_before(time: str, reference_time: str) -> bool:
     return time < reference_time
 
 
-def generate_markdown_line(*items: str | list, is_header: bool = False) -> str:
+def generate_markdown_line(*items: str | list[str], is_header: bool = False) -> str:
     """
     Generate a Markdown table line from a list of items
     :param items: List of items to include in the line
