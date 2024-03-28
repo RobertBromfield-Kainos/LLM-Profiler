@@ -180,7 +180,7 @@ def run_ollama():
     """
     Run 'ollama serve' in a separate process.
     """
-    os.system('open -a Terminal.app /Applications/Ollama.app/Contents/Resources/ollama serve')
+    os.system('open -a Terminal.app ' + utils.ollama_serve)
 
 def run(model: str, prompt_file_name: str, code_only_flag: bool):
     global stop_monitoring
