@@ -1,4 +1,3 @@
-import json
 import re
 import os
 import subprocess
@@ -10,8 +9,24 @@ import pandas as pd
 datetime_format_with_microseconds = '%Y-%m-%d %H:%M:%S.%f'
 datetime_format_no_microseconds = '%Y-%m-%d %H:%M:%S'
 
-ollama_serve = '/Applications/Ollama.app/Contents/Resources/ollama serve'
+def load_env_file(file_path):
+    # Check if the function has been called before
+    if getattr(load_env_file, 'has_run', False):
+        return
+    with open(file_path) as file:
+        for line in file:
+            if line.startswith('#') or not line.strip():
+                # Ignore comments and empty lines
+                continue
+            # Assuming each line is in the form KEY=VALUE
+            key, value = line.strip().split('=', 1)
+            os.environ[key] = value  # Set as an environment variable
+    # Set the function attribute to True to indicate it has run
+    load_env_file.has_run = True
 
+load_env_file('.env')
+
+ollama_serve = os.getenv('OLLAMA_SERVE_PATH')
 
 def get_models_that_have_been_run(prompt_file: str, api_flag: bool) -> list[str]:
     prompt_file = prompt_file.split(".")[0]

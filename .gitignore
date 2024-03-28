@@ -1,3 +1,4 @@
 output/*
 scripts_made/*
 output_api/*
+.env
