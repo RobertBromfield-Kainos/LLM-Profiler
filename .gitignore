@@ -2,3 +2,8 @@ output/*
 scripts_made/*
 output_api/*
 .env
+.idea/*
+output/*
+.DS_Store
+__pycache__/*
+exclude_*.py
