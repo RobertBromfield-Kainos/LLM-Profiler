@@ -226,14 +226,6 @@ def process_model(model: str, prompt_file: str, do_not_run: bool, api_flag: bool
     # Pre-model processing, like printing headers
     utils.print_header(f"Running {model}")
 
-    # Your existing synchronous processing (unchanged)
-    if not do_not_run:
-        if not api_flag:
-            give_prompts.run(prompt_file, model)
-        else:
-            profiler_api.run(model, prompt_file, code_only)
-        utils.print_header(f"Finished running {model}")
-
     # Post-model processing setup (unchanged)
     try:
         output_folder = utils.get_last_output_folder(prompt_file, model, api_flag)
