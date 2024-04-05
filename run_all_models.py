@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 import os
 import matplotlib
+
 # Set the backend to 'Agg' to avoid GUI-related operations. Needs to be done before importing pyplot.
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -248,7 +249,8 @@ def process_model(model: str, prompt_file: str, do_not_run: bool, api_flag: bool
         return future.result()
 
 
-def run(prompt_file: str, api_flag: bool, code_only: bool, optional_models: str, do_not_run: bool) -> None:
+def run(prompt_file: str, api_flag: bool, code_only: bool, optional_models: str, do_not_run: bool,
+        temperature: str) -> None:
     models = utils.get_list_of_models()
 
     if optional_models is not None:
@@ -270,7 +272,7 @@ def run(prompt_file: str, api_flag: bool, code_only: bool, optional_models: str,
             if not api_flag:
                 give_prompts.run(prompt_file, model)
             else:
-                profiler_api.run(model, prompt_file, code_only)
+                profiler_api.run(model, prompt_file, code_only, temperature)
             utils.print_header(f"Finished running {model}")
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -333,7 +335,9 @@ if __name__ == "__main__":
 
     parser.add_argument('--do_not_run', action='store_true',
                         help='This will collate the current data from all the models into a graph without running the prompts')
+    parser.add_argument('--temp', type=str, required=True, default=0,
+                        help='The temperature which is in the API Call. Note: Only to be used with `--code_only` flag')
 
     args = parser.parse_args()
 
-    run(args.prompt_file, args.api, args.code_only, args.models, args.do_not_run)
+    run(args.prompt_file, args.api, args.code_only, args.models, args.do_not_run, args.temp)

@@ -73,7 +73,7 @@ def monitor_process(output_folder):
             monitor_process(output_folder)
 
 
-def send_post_request(model: str, prompt: str, output_folder: str, time_submitted, code_only_flag: bool):
+def send_post_request(model: str, prompt: str, output_folder: str, time_submitted, code_only_flag: bool, temp: float):
     url = "http://localhost:11434/api/generate"
 
     prompt = prompt.replace('\\n', '\n')
@@ -89,7 +89,7 @@ def send_post_request(model: str, prompt: str, output_folder: str, time_submitte
             "raw": True,
             "keep_alive": 1800,
             "options": {
-                "temperature": 0,
+                "temperature": temp,
                 "num_predict": 1024,
                 "stop": [
                     "<fim_prefix>",
@@ -166,6 +166,7 @@ def save_api_response(response_data, output_folder, prompt, time_submitted, time
         line = f"{time_submitted.strftime(utils.datetime_format_with_microseconds)}|||{prompt}|||{time_received.strftime(utils.datetime_format_with_microseconds)}|||{response}\n"
         file.write(line)
 
+
 def wait_for_ollama():
     """
     Wait for 'ollama serve' to start.
@@ -176,14 +177,22 @@ def wait_for_ollama():
             return
         time.sleep(1)
 
+
 def run_ollama():
     """
     Run 'ollama serve' in a separate process.
     """
     os.system('open -a Terminal.app ' + utils.ollama_serve)
 
-def run(model: str, prompt_file_name: str, code_only_flag: bool):
+
+def run(model: str, prompt_file_name: str, code_only_flag: bool, temperature: str):
     global stop_monitoring
+    try:
+        float_temp = float(temperature)
+    except:
+        print(temperature, "is not a valid temperature. Please ensure value is a number")
+        exit(0)
+
     stop_monitoring = threading.Event()
     prompt_file_path = os.path.join('prompt_files', prompt_file_name)
     prompts = read_prompts_from_file(prompt_file_path)
@@ -194,9 +203,9 @@ def run(model: str, prompt_file_name: str, code_only_flag: bool):
     monitor_thread.start()
 
     for prompt in prompts:
-        print(utils.bold('-'*200))
+        print(utils.bold('-' * 200))
         time_submitted = datetime.now()
-        send_post_request(model, prompt, output_folder, time_submitted, code_only_flag)
+        send_post_request(model, prompt, output_folder, time_submitted, code_only_flag, float_temp)
         time.sleep(5)
         print(utils.bold('-' * 200))
 
@@ -217,9 +226,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Send POST requests from prompts in a file and monitor 'ollama serve'.")
     parser.add_argument('--model', type=str, required=True, help='Model name for the API request')
-    parser.add_argument('--prompt_file', type=str, required=True, help='Path to the prompt file')
+    parser.add_argument('--prompt_file', type=str, required=True,
+                        help='Path to the prompt file. Note: This is only used to ')
     parser.add_argument('--code_only', action='store_true',
                         help='If the prompts will only be code that needs to be completed')
+    parser.add_argument('--temp', type=str, required=True, default=0,
+                        help='The temperature which is in the API Call. Note: Only to be used with `--code_only` flag')
 
     args = parser.parse_args()
-    run(args.model, args.prompt_file, args.code_only)
+    run(args.model, args.prompt_file, args.code_only, args.temp)
