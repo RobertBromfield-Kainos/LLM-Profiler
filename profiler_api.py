@@ -230,7 +230,7 @@ if __name__ == "__main__":
                         help='Path to the prompt file. Note: This is only used to ')
     parser.add_argument('--code_only', action='store_true',
                         help='If the prompts will only be code that needs to be completed')
-    parser.add_argument('--temp', type=str, required=True, default=0,
+    parser.add_argument('--temp', type=str, default=0,
                         help='The temperature which is in the API Call. Note: Only to be used with `--code_only` flag')
 
     args = parser.parse_args()

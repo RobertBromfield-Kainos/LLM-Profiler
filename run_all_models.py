@@ -327,7 +327,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--do_not_run', action='store_true',
                         help='This will collate the current data from all the models into a graph without running the prompts')
-    parser.add_argument('--temp', type=str, required=True, default=0,
+    parser.add_argument('--temp', type=str, default=0,
                         help='The temperature which is in the API Call. Note: Only to be used with `--code_only` flag')
 
     args = parser.parse_args()
