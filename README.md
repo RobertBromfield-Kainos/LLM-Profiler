@@ -8,13 +8,18 @@ This repository contains a suite of Python scripts designed to profile the perfo
 2. Ensure you have Python 3.6+ installed.
 3. Ensure you have [ollama](https://github.com/ollama/ollama) installed
 4. Install the required dependencies by running `pip install -r requirements.txt` in your terminal.
-
 5. Before profiling a model please ensure it has been installed and is working with ollama
 
 ​	You can do this by using the command
 ```bash
 ollama run <model_name>
 ```
+
+6. Check Ollama is running then run 
+
+   ```bash
+   python setup_env_file.py
+   ```
 
 ## Usage
 
@@ -27,6 +32,7 @@ Sends POST requests from prompts in a file to `ollama serve` and monitors its pe
 - `--model` (required): The name of the installed model.
 - `--prompt_file` (required): Path to the prompt file containing the prompts to send.
 - `--code_only` (optional): Set this flag if the prompts will only be code that needs to be completed.
+- `--temp` (optional): This will decide what temprature to run the model at. (Defaults to 0)
 
 **Usage**
 
@@ -55,9 +61,16 @@ Runs all the prompts with all the models.
 
 **Arguments**
 
-  -  `prompt_file`  (required): The name of th prompt file.
-  -  `--api` (optional): Indicates the use of an API for running the prompts.
-  -  `--code_only` (optional) :Should be used if the prompts are solely code snippets that need to be completed.
+-  `prompt_file`  (required): The name of th prompt file.
+-  `--api` (optional): Indicates the use of an API for running the prompts.
+-  `--code_only` (optional) :Should be used if the prompts are solely code snippets that need to be completed.
+   -  Only avalible when running `--api`
+
+-  `--temp` (optional): This will decide what temprature to run the model at. (Defaults to 0) 
+   -  Only avalible when running `--api`
+
+-  `--do_not_run` (optional): This will collate the current data from all the models into a graph without running the prompts
+-  `--models` (optional): This will only run the models given to it opposed to all of them
 
 **Usage**:
 
@@ -67,7 +80,15 @@ python run_all_models.py <prompt_file> --api --code_only
 
 ### Test Prompts from a Dataset with Python  
 
-Processes prompts from a file for testing against specified models when those prompts are the first part of a python program
+Processes prompts from a file for testing against specified models when those prompts are the first part of a python program.
+
+> **Note:** This is currently only made for the HumanEval dataset and cut down versions of it with plans to generalise it later
+
+**Usage:**
+
+```bash
+python test_python_prompts.py <prompt_file>
+```
 
 **Arguments**:
 
