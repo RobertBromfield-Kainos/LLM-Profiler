@@ -9,6 +9,7 @@ import pandas as pd
 datetime_format_with_microseconds = '%Y-%m-%d %H:%M:%S.%f'
 datetime_format_no_microseconds = '%Y-%m-%d %H:%M:%S'
 
+
 def load_env_file(file_path):
     # Check if the function has been called before
     if getattr(load_env_file, 'has_run', False):
@@ -24,9 +25,14 @@ def load_env_file(file_path):
     # Set the function attribute to True to indicate it has run
     load_env_file.has_run = True
 
-load_env_file('.env')
 
+load_env_file('.env')
 ollama_serve = os.getenv('OLLAMA_SERVE_PATH')
+ollama = os.getenv('OLLAMA_PATH')
+ollama_helper_gpu = os.getenv('OLLAMA_HELPER_GPU_PATH')
+ollama_helper = os.getenv('OLLAMA_HELPER_PATH')
+ollama_helper_renderer = os.getenv('OLLAMA_HELPER_RENDERER_PATH')
+
 
 def get_models_that_have_been_run(prompt_file: str, api_flag: bool) -> list[str]:
     prompt_file = prompt_file.split(".")[0]
@@ -45,6 +51,7 @@ def get_last_output_folder(prompt_file: str, model: str, api_flag: bool) -> str:
         return os.path.join(model_path, sorted(os.listdir(model_path))[-1])
     except FileNotFoundError:
         return None
+
 
 def get_time_difference(start: str, end: str) -> float:
     start = pd.to_datetime(start)
@@ -175,6 +182,7 @@ def print_exception(message: str, e: Exception):
     output += ''.join(traceback.format_exception(None, e, e.__traceback__))
     print(output)
 
+
 def nanoseconds_to_human_readable(ns):
     # Constants for conversions
     nanoseconds_per_microsecond = 1000
@@ -211,6 +219,7 @@ def nanoseconds_to_human_readable(ns):
 
     return readable_time
 
+
 def close_ollama():
     try:
         path_prefix = "/Applications/Ollama.app"
@@ -232,4 +241,3 @@ def close_ollama():
                 subprocess.run(["kill", "-9", pid])
     except Exception as e:
         print(f"An error occurred: {e}")
-

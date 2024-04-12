@@ -37,14 +37,17 @@ def get_usage_stats(command):
     return None
 
 
-def monitor_process(output_folder):
+def monitor_processes(output_folder, commands, no_of_tries_monitor_processes=0):
     """
-    Monitor 'ollama serve' process and log CPU and memory usage.
+    Monitor multiple 'ollama serve' processes, sum their CPU and memory usage,
+    and log the aggregated data to CSV files.
+    Handles exceptions and retries up to 10 times.
     """
     cpu_file = os.path.join(output_folder, 'cpu_usage.csv')
     memory_file = os.path.join(output_folder, 'memory_usage.csv')
-    global no_of_tries_monitor_process
+
     try:
+        # Initialize files for logging
         with open(cpu_file, 'w', newline='') as file:
             writer = csv.writer(file)
             writer.writerow(['Timestamp', 'CPU Usage (%)'])
@@ -53,24 +56,34 @@ def monitor_process(output_folder):
             writer.writerow(['Timestamp', 'Memory Usage (MB)', 'Virtual Memory Usage (MB)'])
 
         while not stop_monitoring.is_set():
-            stats = get_usage_stats(utils.ollama_serve)
-            if stats:
-                current_time = datetime.now().strftime(utils.datetime_format_with_microseconds)
-                with open(cpu_file, 'a', newline='') as file:
-                    writer = csv.writer(file)
-                    writer.writerow([current_time, stats['cpu_percent']])
-                with open(memory_file, 'a', newline='') as file:
-                    writer = csv.writer(file)
-                    memory_used_mb = stats['memory_used'] / (1024 * 1024)
-                    virtual_memory_used_mb = stats['virtual_memory_used'] / (1024 * 1024)
-                    writer.writerow([current_time, memory_used_mb, virtual_memory_used_mb])
-            else:
-                print("ollama serve process not found.")
-    except:
-        if no_of_tries_monitor_process < 10:
+            all_stats = [get_usage_stats(cmd) for cmd in commands]
+            current_time = datetime.now().strftime(utils.datetime_format_with_microseconds)
+
+            # Aggregate CPU usage for all commands
+            total_cpu_usage = sum(stats.get('cpu_percent', 0) for stats in all_stats if stats)
+            with open(cpu_file, 'a', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow([current_time, total_cpu_usage])
+
+            # Aggregate memory usage for all commands
+            total_memory_usage = sum(stats.get('memory_used', 0) for stats in all_stats if stats) / (1024 * 1024)
+            total_virtual_memory_usage = sum(stats.get('virtual_memory_used', 0) for stats in all_stats if stats) / (
+                    1024 * 1024)
+            with open(memory_file, 'a', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow([current_time, total_memory_usage, total_virtual_memory_usage])
+
+            if not any(all_stats):
+                print("None of the ollama serve processes were found.")
+
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        if no_of_tries_monitor_processes < 10:
             time.sleep(1)
-            no_of_tries_monitor_process += 1
-            monitor_process(output_folder)
+            no_of_tries_monitor_processes += 1
+            monitor_processes(output_folder, commands, no_of_tries_monitor_processes)
+        else:
+            print("Maximum retry attempts reached.")
 
 
 def send_post_request(model: str, prompt: str, output_folder: str, time_submitted, code_only_flag: bool, temp: float):
@@ -199,7 +212,9 @@ def run(model: str, prompt_file_name: str, code_only_flag: bool, temperature: st
     output_folder = utils.make_folder('output_api', prompt_file_name.split('.')[0], model,
                                       datetime.now().strftime(utils.datetime_format_no_microseconds))
 
-    monitor_thread = threading.Thread(target=monitor_process, args=(output_folder,))
+    monitor_thread = threading.Thread(target=monitor_processes, args=(
+        output_folder,
+        [utils.ollama_serve, utils.ollama_helper_gpu, utils.ollama_helper, utils.ollama_helper_renderer]))
     monitor_thread.start()
 
     for prompt in prompts:
