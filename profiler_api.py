@@ -43,6 +43,8 @@ def monitor_processes(output_folder, commands, no_of_tries_monitor_processes=0):
     and log the aggregated data to CSV files.
     Handles exceptions and retries up to 10 times.
     """
+    commands = [cmd for cmd in commands if cmd is not None]
+
     cpu_file = os.path.join(output_folder, 'cpu_usage.csv')
     memory_file = os.path.join(output_folder, 'memory_usage.csv')
 
